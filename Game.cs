@@ -1,10 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using RacingGame.Entities;
-using RacingGame.Entities.Scenes;
+using RacingGame.Core;
+using RacingGame.Scenes;
 using RacingGame.Utils;
 using System;
+using System.Linq;
 
 /*
  * COOL BUT NOT IDEAS TO MAKE RIGHT NOW:
@@ -13,12 +14,12 @@ using System;
  *	 to impact position and car's speed, being able to rip off the engine or a wheel for example (or more commonly the bodywork)
  * 
  * TODO RIGHT NOW:
- * - implement walls collisions
+ * - implement walls collisions (90%)
  * - mouse pressed/released
- * - game loop: win
+ * - game loop: win (50%)
  * - ai system
  * - menu : main, skin selection & level selection
- * - 2 levels
+ * - 2 levels (25%)
  * 
  * DONE:
  * - keyboard pressed/released
@@ -29,18 +30,26 @@ using System;
 
 namespace RacingGame
 {
+	public enum DebugLevel
+	{
+		None,
+		Colliders,
+		Checkpoints,
+	}
+
 	public class Game : Microsoft.Xna.Framework.Game, IInputReceiver
 	{
 		private SpriteBatch _spriteBatch;
 
 		public Vector2 RenderSize = new Vector2( 320f, 180f );
 
-		public static Scene Scene { get; protected set; }
+		public static BaseScene Scene { get; protected set; }
 		public static Game Instance { get; protected set; }
 		public static Camera Camera { get; protected set; }
 		public static SpriteFont Font;
 
-		public static bool Debug;
+		public static DebugLevel DebugLevel;
+		public static float CurrentTime;
 
 		public Game()
 		{
@@ -53,10 +62,10 @@ namespace RacingGame
 			IsMouseVisible = true;
 			Window.AllowUserResizing = true;
 
-			Inputz.AddReceiver( this );
+			InputManager.AddReceiver( this );
 		}
 
-		public static void SetScene<T>() where T : Scene, new()
+		public static void SetScene<T>() where T : BaseScene, new()
 		{
 			if ( !( Scene == null ) )
 				Scene.QueueFree();
@@ -79,17 +88,21 @@ namespace RacingGame
 			base.Initialize();
 
 			Console.WriteLine( "Game: Initialize" );
-			Inputz.Initialize();
-			Camera = new Camera( RenderSize, Window, .85f );
+			InputManager.Initialize();
+			Camera = new Camera( RenderSize, Window, .75f );
 
 			SetScene<GameScene>();
 		}
 
 		protected override void Update( GameTime gameTime )
 		{
-			Inputz.Update();
+			float dt = (float) gameTime.ElapsedGameTime.TotalSeconds;
+			CurrentTime += dt;
 
-			EntityManager.Update( (float) gameTime.ElapsedGameTime.TotalSeconds );
+			//  update
+			InputManager.Update();
+
+			EntityManager.Update( dt );
 			EntityManager.UpdateDeletionQueue();
 
 			base.Update( gameTime );
@@ -100,14 +113,15 @@ namespace RacingGame
 			GraphicsDevice.Clear( Color.Black );
 
 			//  game entities
-			_spriteBatch.Begin( transformMatrix: Camera.Transform, samplerState: SamplerState.PointWrap );
+			_spriteBatch.Begin( blendState: BlendState.NonPremultiplied, transformMatrix: Camera.Transform, samplerState: SamplerState.PointWrap );
 			EntityManager.Draw( _spriteBatch );
 			_spriteBatch.End();
 
 			//  hud
 			_spriteBatch.Begin( /*transformMatrix: Camera.ViewportMatrix*/ );
 			_spriteBatch.DrawString( Font, string.Format( "{0} ents ({1} U; {2} D; {3} HUD)", EntityManager.Entities.Count, EntityManager.UpdateEntities.Count, EntityManager.DrawableEntities.Count, EntityManager.DrawableHUDs.Count ), Vector2.One * 6, Color.White );
-			_spriteBatch.DrawString( Font, Inputz.InputReceivers.Count + " input receivers", new Vector2( 6, Font.MeasureString( "a" ).Y + 6 ), Color.White );
+			_spriteBatch.DrawString( Font, InputManager.InputReceivers.Count + " input receivers", new Vector2( 6, Font.MeasureString( "a" ).Y + 6 ), Color.White );
+			_spriteBatch.DrawString( Font, "Debug: " + Enum.GetName( typeof( DebugLevel ), DebugLevel ), new Vector2( 6, Font.MeasureString( "a" ).Y * 2 + 6 ), Color.White );
 			EntityManager.DrawHUD( _spriteBatch );
 			/*
 			_spriteBatch.DrawLine( Vector2.Zero, new Vector2( Window.ClientBounds.Width, Window.ClientBounds.Height ), Color.White );
@@ -121,7 +135,20 @@ namespace RacingGame
 		public void KeyPressed( Keys key )
 		{
 			if ( key == Keys.OemComma )
-				Debug = !Debug;
+			{
+				Array values = Enum.GetValues( typeof( DebugLevel ) );
+
+				for ( int i = 0; i < values.Length; i++ )
+				{
+					DebugLevel level = (DebugLevel) values.GetValue( i );
+					if ( level == DebugLevel )
+					{
+						DebugLevel = (DebugLevel) values.GetValue( ( i + 1 ) % values.Length );
+						break;
+					}	
+				}
+
+			}
 		}
 		public void KeyReleased( Keys key ) {}
 	}

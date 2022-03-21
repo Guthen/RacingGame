@@ -1,8 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
-using RacingGame.Entities;
+using RacingGame.Core;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 
 /*
@@ -17,9 +16,11 @@ namespace RacingGame.Utils
 {
 	public class BoundingPolygon
 	{
-		public Vector2 Position { 
-			get => parent == null ? position : parent.Position; 
-			set {
+		public Vector2 Position
+		{
+			get => position;
+			set
+			{
 				if ( value == position ) return;
 				position = value;
 
@@ -28,21 +29,22 @@ namespace RacingGame.Utils
 			}
 		}
 		public Vector2[] Vertices; //  transformed vertices in world coordinates
-		public float Angle { 
-			get => angle; 
-			set {
+		public float Angle
+		{
+			get => angle;
+			set
+			{
 				if ( value == angle ) return;
 				angle = value;
 
 				//  update vertices
 				UpdateVertices();
-			} 
+			}
 		}
 
 		private Vector2[] vertices; //  non-transformed vertices in relative coordinates
 		private Vector2 position; //  position of polygon
 		private float angle;
-		private GameEntity parent; //  TODO: update vertices when attached to parent
 
 		public BoundingPolygon( Vector2 pos, int n_verts, float ang = 0f )
 		{
@@ -69,18 +71,23 @@ namespace RacingGame.Utils
 			UpdateVertex( id );
 		}
 
-		public void AttachTo( GameEntity entity ) => parent = entity;
 		public void UpdateVertex( int id )
 		{
 			Vector2 pos = vertices[id];
-			float ang = Angle * Mathz.DegToRad;
-
-			Vertices[id].X = Position.X + MathF.Cos( ang ) * pos.X - MathF.Sin( ang ) * pos.Y;
-			Vertices[id].Y = Position.Y + MathF.Sin( ang ) * pos.X + MathF.Cos( ang ) * pos.Y;
+			Vertices[id].X = Position.X + MathF.Cos( Angle ) * pos.X - MathF.Sin( Angle ) * pos.Y;
+			Vertices[id].Y = Position.Y + MathF.Sin( Angle ) * pos.X + MathF.Cos( Angle ) * pos.Y;
 		}
-		public void UpdateVertices() {
-			for( int i = 0; i < vertices.Length; i++ ) 
+		public void UpdateVertices()
+		{
+			for ( int i = 0; i < vertices.Length; i++ )
 				UpdateVertex( i );
+		}
+
+		public void UpdateTo( Vector2 pos, float angle )
+		{
+			this.position = pos;
+			this.angle = angle;
+			UpdateVertices();
 		}
 
 		/// <summary>
@@ -110,10 +117,10 @@ namespace RacingGame.Utils
 			Vector2 center = new Vector2( rect.Center.X, rect.Center.Y );
 			return new BoundingPolygon( center, new Vector2[]
 			{
-				new Vector2( rect.Left, rect.Bottom ) - center,
 				new Vector2( rect.Left, rect.Top ) - center,
 				new Vector2( rect.Right, rect.Top ) - center,
 				new Vector2( rect.Right, rect.Bottom ) - center,
+				new Vector2( rect.Left, rect.Bottom ) - center,
 			} );
 		}
 
@@ -130,27 +137,63 @@ namespace RacingGame.Utils
 		/// <returns>If merge was successful</returns>
 		public static bool TryMerge( BoundingPolygon a, BoundingPolygon b, out BoundingPolygon result, bool convex = true )
 		{
-			List<Vector2> vertices = new List<Vector2>();
+			if ( convex && ( !IsConvex( a ) || !IsConvex( b ) ) )
+			{
+				result = null;
+				return false;
+			}
 
+			//  setup collections
+			List<Vector2> vertices = new List<Vector2>();
+			Dictionary<BoundingPolygon, HashSet<int>> merged_vertices = new Dictionary<BoundingPolygon, HashSet<int>>
+			{
+				{ a, new HashSet<int>() },
+				{ b, new HashSet<int>() }
+			};
+
+			//  add all vertices who form an outline of both polygons
+			int common_vertices = 0;
 			int current_id = 0;
 			BoundingPolygon current = a;
 			BoundingPolygon other = b;
 			for ( int i = 0; i < a.Vertices.Length + b.Vertices.Length; i++ )
 			{
+				if ( merged_vertices[current].Contains( current_id ) )
+				{
+					if ( common_vertices < 2 )
+					{
+						//Console.WriteLine( "vertices already merged" );
+						result = null;
+						return false;
+					}
+					else
+						break;
+				}
+
+				//Console.WriteLine( i + " / " + ( a.Vertices.Length + b.Vertices.Length ) + ": " + current_id );
+				//if ( current_id >= current.Vertices.Length ) break;
 				Vector2 vertex = current.Vertices[current_id];
-				bool is_common = false;
+				if ( vertices.Contains( vertex - a.Position ) ) //  do not add duplicates
+				{
+					current_id = ( current_id + 1 ) % current.Vertices.Length;
+					continue;
+				}
 
 				//  check for a common vertex
+				bool is_common = false;
 				for ( int j = 0; j < other.Vertices.Length; j++ )
 				{
 					if ( other.Vertices[j] == vertex )
 					{
+						//Console.WriteLine( current_id + " & " + j + " are common vertices" );
 						is_common = true;
 
 						//  switch polygons
 						BoundingPolygon temp = current;
 						current = other;
 						other = temp;
+
+						merged_vertices[current].Add( j );
 
 						vertices.Add( vertex - a.Position );
 						current_id = ( j + 1 ) % current.Vertices.Length;
@@ -160,15 +203,38 @@ namespace RacingGame.Utils
 
 				if ( !is_common )
 				{
+					merged_vertices[current].Add( current_id );
+
 					vertices.Add( vertex - a.Position );
-					current_id++;
+					current_id = ( current_id + 1 ) % current.Vertices.Length;
 				}
+				else
+					common_vertices++;
 			}
+
+			//  check common vertices (min: 2)
+			if ( common_vertices < 2 )
+			{
+				//Console.WriteLine( "no common vertices" );
+				result = null;
+				return false;
+			}
+
+			//  remove unused vertices (for instance: vertices on the same edge)
+			#region RemoveUnusedVertices
+			for ( int i = 0; i < vertices.Count; i++ )
+			{
+				Vector2 vertex = vertices[i];
+				if ( i > 0 && vertex.IsInLine( vertices[( i - 1 ) % vertices.Count], vertices[( i + 1 ) % vertices.Count] ) )
+					vertices.RemoveAt( i );
+			}
+			#endregion
 
 			//  check convexity
 			Vector2[] vertices_array = vertices.ToArray();
 			if ( convex && !IsConvex( vertices_array ) )
 			{
+				//Console.WriteLine( "not convex" );
 				result = null;
 				return false;
 			}
@@ -180,24 +246,23 @@ namespace RacingGame.Utils
 
 		/*
 		 * Simple algorithm to know if a polygon is convex or not.
-		 * Basically, it loop over all edges and checks if the direction (left or right) of the next edge is different from the previous one
+		 * Basically, it loop over all edges and checks if the direction (left or right) tp the next edge is different from the previous one
 		 * Source:
 		 * ─ http://www.sunshine2k.de/coding/java/Polygon/Convex/polygon.htm#:~:text=polygon%20is%20convex%2C%20I%20came,polygon%20does%20not%20cross%20itself
 		 */
 		public static bool IsConvex( Vector2[] vertices )
 		{
-			if ( vertices.Length < 3 ) throw new ArgumentException( "There should be at least 3 vertices!" );
+			if ( vertices.Length < 3 ) return false;//throw new ArgumentException( "There should be at least 3 vertices!" );
 			if ( vertices.Length == 3 ) return true; //  triangles are always convex
 
 			float old_dot = 0f;
-
 			for ( int i = 0; i < vertices.Length; i++ )
 			{
 				Vector2 p = vertices[i];
 				Vector2 u = vertices[( i + 2 ) % vertices.Length];
 
 				Vector2 v = vertices[( i + 1 ) % vertices.Length] - p;
-				
+
 				float dot = u.X * v.Y - u.Y * v.X + v.X * p.Y - v.Y * p.X;
 				if ( i == 0 )
 					old_dot = dot;

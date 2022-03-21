@@ -37,9 +37,29 @@ namespace RacingGame.Utils
             spriteBatch.Draw( GetTexture( spriteBatch ), point, null, color, angle, origin, scale, SpriteEffects.None, 0 );
         }
 
+
         public static void DrawRectangle( this SpriteBatch spriteBatch, Rectangle rect, Color color, float angle = 0f, Vector2 origin = new Vector2() )
 		{
             spriteBatch.Draw( GetTexture( spriteBatch ), rect, null, color, angle, origin, SpriteEffects.FlipHorizontally, 0 );
+		}
+
+        #region Polygons
+         public static void DrawPolygonVertex( this SpriteBatch spriteBatch, int id, BoundingPolygon polygon, Color color, int size = 2, bool draw_id = true )
+		{
+            Vector2 pos = polygon.Vertices[id];
+
+            int x = (int) pos.X - size / 2;
+            int y = (int) pos.Y - size / 2;
+            spriteBatch.DrawRectangle( new Rectangle( x, y, size, size ), color );
+
+            if ( draw_id )
+                spriteBatch.DrawString( Game.Font, id.ToString(), new Vector2( x + 5, y ), color, 0f, Vector2.Zero, .5f, SpriteEffects.None, 0f );
+		}
+
+        public static void DrawPolygonVertices( this SpriteBatch spriteBatch, BoundingPolygon polygon, Color color, int size = 2, bool draw_id = true )
+		{
+            for ( int i = 0; i < polygon.Vertices.Length; i++ )
+                spriteBatch.DrawPolygonVertex( i, polygon, color, size, draw_id );
 		}
 
         public static void DrawPolygon( this SpriteBatch spriteBatch, BoundingPolygon polygon, Color color, float thickness = 1f )
@@ -69,5 +89,6 @@ namespace RacingGame.Utils
             spriteBatch.DrawLine( bottom_right, bottom_left, color, thickness );
             spriteBatch.DrawLine( bottom_left, top_left, color, thickness );
 		}
+        #endregion
     }
 }

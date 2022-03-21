@@ -2,13 +2,12 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RacingGame.Utils;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using RacingGame.Core;
+using RacingGame.Gameplay;
 
-namespace RacingGame.Entities.Scenes
+namespace RacingGame.Scenes
 {
-	public class GameScene : Scene, IDrawableHUD
+	public class GameScene : BaseScene, IDrawableHUD
 	{
 		public static PlayerRaceCarEntity Player { get; protected set; } 
 		public static MapEntity Map { get; protected set; }
@@ -29,12 +28,13 @@ namespace RacingGame.Entities.Scenes
 			//  ai
 			for ( int i = 1; i < Map.Level.SpawnPositions.Length; i++ )
 			{
-				RaceCarEntity car = new RaceCarEntity
+				AIRaceCarEntity car = new AIRaceCarEntity
 				{
 					Position = Map.GridToWorld( Map.Level.GetSpawnPos( i ), true ),
 					Angle = Map.Level.GetSpawnDir( i ).Angle()
 				};
 				car.SetSkin( i % car.Skins.Length );
+				//break;
 			}
 
 			Game.Camera.SetTarget( Player );

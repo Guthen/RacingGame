@@ -19,14 +19,14 @@ namespace RacingGame.Utils
 		public abstract void KeyReleased( Keys key );
 	}
 
-	public static class Inputz
+	public static class InputManager
 	{
 		public static List<IInputReceiver> InputReceivers = new List<IInputReceiver>();
 		private static Dictionary<Keys, KeyState> keyStates = new Dictionary<Keys, KeyState>();
-		private static Dictionary<Keys, KeyState> mouseStates = new Dictionary<Keys, KeyState>();
+		//private static Dictionary<Keys, KeyState> mouseStates = new Dictionary<Keys, KeyState>();
 
 		private static KeyboardState lastKeyboardState;
-		private static MouseState lastMouseState;
+		//private static MouseState lastMouseState;
 
 
 		public static void Initialize()

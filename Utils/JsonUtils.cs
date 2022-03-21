@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RacingGame.Utils.Jsonz
+namespace RacingGame.Utils.JsonUtils
 {
 	public class Vector2Converter : JsonConverter
 	{

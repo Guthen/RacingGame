@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace RacingGame.Entities
+namespace RacingGame.Core
 {
 	public interface IUpdate
 	{

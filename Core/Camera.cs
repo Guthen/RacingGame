@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace RacingGame.Entities
+namespace RacingGame.Core
 {
 	public class Camera : Entity, IUpdate
 	{

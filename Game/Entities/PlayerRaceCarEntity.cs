@@ -1,15 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace RacingGame.Entities
+namespace RacingGame.Gameplay
 {
 	public class PlayerRaceCarEntity : RaceCarEntity
 	{
-		public PlayerRaceCarEntity() {}
-
 		public override void Update( float dt )
 		{
 			KeyboardState keyboard = Keyboard.GetState();
@@ -32,7 +28,7 @@ namespace RacingGame.Entities
 				turn_axis += 1f;
 
 			Move( dt, throttle, turn_axis, is_braking );
-			Game.Camera.Offset = Vector2.Lerp( Game.Camera.Offset, new Vector2( MathF.Cos( Angle ), MathF.Sin( Angle ) ) * 35f * _currentThrottle, dt * 10f );
+			Game.Camera.Offset = Vector2.Lerp( Game.Camera.Offset, new Vector2( MathF.Cos( Angle ), MathF.Sin( Angle ) ) * 35f * currentThrottle, dt * 10f );
 		
 			base.Update( dt );
 		}

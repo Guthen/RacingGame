@@ -45,7 +45,9 @@ namespace RacingGame.Utils
 			tileset.TileSize = new Point( int.Parse( doc.DocumentElement.GetAttribute( "tilewidth" ) ), int.Parse( doc.DocumentElement.GetAttribute( "tileheight" ) ) );
 
 			//  read image
-			string image_path = Path.ChangeExtension( Path.GetFullPath( Path.Combine( Path.GetDirectoryName( path ), "../" + doc.DocumentElement.SelectSingleNode( "image" ).Attributes.GetNamedItem( "source" ).InnerText ) ).Substring( Directory.GetCurrentDirectory().Length + 1 ).Replace( '\\', '/' ), string.Empty ).Replace( ".", string.Empty ); 
+			string image_path = Path.Combine( Path.GetDirectoryName( path ), "../" + doc.DocumentElement.SelectSingleNode( "image" ).Attributes.GetNamedItem( "source" ).InnerText ); //  get path from document
+			image_path = Path.GetFullPath( image_path ).Substring( Directory.GetCurrentDirectory().Length + 1 ).Replace( '\\', '/' ); //  get relative path
+			image_path = Path.ChangeExtension( image_path, string.Empty ).Replace( ".", string.Empty ); //  remove extension
 			tileset.Image = Assets.GetAsset<Texture2D>( image_path );
 
 			//  read custom tiles

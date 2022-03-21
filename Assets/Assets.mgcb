@@ -50,6 +50,9 @@
 #begin Levels/monaco.tmx
 /copy:Levels/monaco.tmx
 
+#begin Levels/o.tmx
+/copy:Levels/o.tmx
+
 #begin Levels/tileset.tsx
 /copy:Levels/tileset.tsx
 

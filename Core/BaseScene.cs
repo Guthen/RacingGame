@@ -4,19 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace RacingGame.Entities.Scenes
+namespace RacingGame.Core
 {
-	public class Scene : Entity, IInputReceiver
+	public abstract class BaseScene : Entity, IInputReceiver
 	{
-		public Scene()
+		public BaseScene()
 		{
 			Clearable = false;
-			Inputz.AddReceiver( this );
+			InputManager.AddReceiver( this );
 
 			Initialize();
 		}
 
-		public virtual void Initialize() {}
+		public abstract void Initialize();
 
 		public virtual void KeyPressed( Keys key ) {}
 		public virtual void KeyReleased( Keys key ) {}
@@ -24,6 +24,6 @@ namespace RacingGame.Entities.Scenes
 		public virtual void MousePressed() {}
 		public virtual void MouseReleased() {}
 
-		public override void OnFree() => Inputz.RemoveReceiver( this );
+		public override void OnFree() => InputManager.RemoveReceiver( this );
 	}
 }
