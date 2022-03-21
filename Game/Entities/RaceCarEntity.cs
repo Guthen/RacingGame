@@ -38,6 +38,8 @@ namespace RacingGame.Gameplay
 
 			Collider = BoundingPolygon.FromRectangle( new Rectangle( 1, 5, 14, 6 ) );
 
+			debugProperties.Add( "CheckpointId" );
+			debugProperties.Add( "Lap" );
 			debugProperties.Add( "IsStuck" );
 		}
 
