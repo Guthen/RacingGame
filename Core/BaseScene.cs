@@ -10,7 +10,7 @@ namespace RacingGame.Core
 	{
 		public BaseScene()
 		{
-			Clearable = false;
+			IsStatic = true;
 			InputManager.AddReceiver( this );
 
 			Initialize();

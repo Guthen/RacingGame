@@ -21,7 +21,7 @@ namespace RacingGame.Core
 
 	public class Entity
 	{
-		public bool Clearable = true;
+		public bool IsStatic = false;
 		public bool IsDeletionQueued = false;
 
 		public Entity()
@@ -83,7 +83,7 @@ namespace RacingGame.Core
 		public static void Clear()
 		{
 			foreach ( Entity entity in Entities )
-				if ( entity.Clearable )
+				if ( !entity.IsStatic )
 					QueueFree( entity );
 		}
 

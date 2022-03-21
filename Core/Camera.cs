@@ -27,9 +27,9 @@ namespace RacingGame.Core
 
 		private GameEntity _target;
 
-		public Camera( Vector2 renderSize, GameWindow window, float zoom = 1f ) 
+		public Camera( Vector2 renderSize, GameWindow window, float zoom = 1f )
 		{
-			Clearable = false;
+			IsStatic = true;
 			this.renderSize = renderSize;
 
 			this.window = window;
@@ -47,6 +47,16 @@ namespace RacingGame.Core
 		{
 			Zoom = zoom;
 			UpdateScaleTransform();
+		}
+
+		public void CenterTo( Vector2 pos )
+		{
+			Vector2 last_position = Position;
+
+			Position = pos - TranslateScreenPosition( windowSize / 2 ) + Offset;
+			
+			if ( !( last_position == Position ) )
+				UpdateTransform();
 		}
 
 		private void UpdateScreenScale( object sender = null, EventArgs e = null )
@@ -79,14 +89,8 @@ namespace RacingGame.Core
 
 		public void Update( float dt )
 		{
-			Vector2 last_position = Position;
 			if ( !( _target == null ) )
-			{
-				Position = _target.Position /*+ TranslateScreenPosition( _target.textureSize * _target.scale )*/ - TranslateScreenPosition( windowSize / 2 ) + Offset;
-			}
-
-			if ( !( last_position == Position ) )
-				UpdateTransform();
+				CenterTo( _target.Position );
 		}
 	}
 }
