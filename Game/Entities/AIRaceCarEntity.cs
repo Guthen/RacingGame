@@ -1,5 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using RacingGame.Core;
 using RacingGame.Utils;
 
 namespace RacingGame.Gameplay
@@ -7,12 +9,12 @@ namespace RacingGame.Gameplay
 	public class AIRaceCarEntity : RaceCarEntity
 	{
 		private float throttle;
+		[DebugFloatField( Digits = 2 )]
 		private float turnAxis;
+		private float targetTurnAxis;
+		[DebugFloatField( Digits = 2 )]
+		private float diffAngle;
 
-		public AIRaceCarEntity()
-		{
-			debugProperties.Add( "turnAxis" );
-		}
 
 		public override void Update( float dt )
 		{

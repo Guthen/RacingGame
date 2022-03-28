@@ -31,7 +31,19 @@ namespace RacingGame.Core
 		protected Texture2D texture;
 		public Vector2 TextureSize;
 
-		protected List<string> debugProperties = new List<string>();
+		private Dictionary<FieldInfo, DebugFieldAttribute> debugAttributes;
+
+		public GameEntity()
+		{
+			//  cache debug field attributes
+			debugAttributes = new Dictionary<FieldInfo, DebugFieldAttribute>();
+			foreach ( FieldInfo field in GetType().GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) )
+				foreach ( Attribute attribute in field.GetCustomAttributes() )
+				{
+					if ( !( attribute is DebugFieldAttribute || attribute is DebugFloatFieldAttribute ) ) continue;
+					debugAttributes.Add( field, (DebugFieldAttribute) attribute );
+				}
+		}
 
 		protected void SetTexture( Texture2D _texture, Rectangle? _quad = null, bool splitToSkins = false )
 		{
@@ -61,27 +73,31 @@ namespace RacingGame.Core
 			quad = Skins[Skin];
 		}
 
-		public virtual void Update( float dt ) {}
+		public virtual void Update( float dt ) { }
 
 		public virtual void Draw( SpriteBatch spriteBatch )
 		{
 			spriteBatch.Draw( texture, Position, quad, Color, Angle, Origin, Scale, Effects, 0 );
 
-			#region Debug
 			if ( Game.DebugLevel == DebugLevel.None ) return;
+			DebugDraw( spriteBatch );
+		}
 
+		public virtual void DebugDraw( SpriteBatch spriteBatch )
+		{
+			//  draw all debugged fields
 			float scale = .5f;
 			Vector2 offset = new Vector2( 0f, 20f );
-			foreach ( string name in debugProperties )
-			{
-				var value = GetType().GetField( name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ).GetValue( this );
 
-				string text = name + ": " + value;
+			foreach ( FieldInfo field in debugAttributes.Keys )
+			{
+				DebugFieldAttribute attribute = debugAttributes[field]; 
+				string text = field.Name + ": " + attribute.FormatValue( field.GetValue( this ) );
+
 				Vector2 text_size = Game.Font.MeasureString( text ) * scale;
 				spriteBatch.DrawString( Game.Font, text, Position - offset - new Vector2( text_size.X / 2, 0f ), Color.White, 0f, Vector2.Zero, Vector2.One * scale, SpriteEffects.None, 0f );
 				offset.Y += text_size.Y - 2;
 			}
-			#endregion
 		}
 	}
 }

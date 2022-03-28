@@ -18,11 +18,14 @@ namespace RacingGame.Gameplay
 		public float DeccelerationSpeed = 1.5f;
 		public float BrakeSpeed = 1f;
 
+		[DebugField()]
 		public int CheckpointId = 0;
+		[DebugField()]
 		public int Lap = 1;
 
 		public BoundingPolygon Collider;
 		
+		[DebugField()]
 		public bool IsStuck = false;
 
 		protected float currentThrottle = 0f;
@@ -37,10 +40,6 @@ namespace RacingGame.Gameplay
 			SetSkin( 4 );
 
 			Collider = BoundingPolygon.FromRectangle( new Rectangle( 1, 5, 14, 6 ) );
-
-			debugProperties.Add( "CheckpointId" );
-			debugProperties.Add( "Lap" );
-			debugProperties.Add( "IsStuck" );
 		}
 
 		public void Move( float dt, float throttle, float turn_axis, bool is_braking = false )
