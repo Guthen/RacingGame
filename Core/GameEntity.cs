@@ -13,6 +13,9 @@ namespace RacingGame.Core
 		public Vector2 Scale = Vector2.One;
 		public float Angle;
 
+		public Vector2 Forward => Angle.Direction();
+		public Vector2 Right => Forward.Rotate90();
+
 		public Rectangle Bounds
 		{
 			get
@@ -40,7 +43,7 @@ namespace RacingGame.Core
 			foreach ( FieldInfo field in GetType().GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) )
 				foreach ( Attribute attribute in field.GetCustomAttributes() )
 				{
-					if ( !( attribute is DebugFieldAttribute || attribute is DebugFloatFieldAttribute ) ) continue;
+					if ( !( attribute is DebugFieldAttribute ) ) continue;
 					debugAttributes.Add( field, (DebugFieldAttribute) attribute );
 				}
 		}
@@ -85,6 +88,8 @@ namespace RacingGame.Core
 
 		public virtual void DebugDraw( SpriteBatch spriteBatch )
 		{
+			if ( !( Game.DebugLevel == DebugLevel.Variables ) ) return;
+
 			//  draw all debugged fields
 			float scale = .5f;
 			Vector2 offset = new Vector2( 0f, 20f );

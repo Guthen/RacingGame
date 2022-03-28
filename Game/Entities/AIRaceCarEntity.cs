@@ -3,36 +3,84 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RacingGame.Core;
 using RacingGame.Utils;
+using RacingGame.Scenes;
 
 namespace RacingGame.Gameplay
 {
 	public class AIRaceCarEntity : RaceCarEntity
 	{
-		private float throttle;
-		[DebugFloatField( Digits = 2 )]
-		private float turnAxis;
-		private float targetTurnAxis;
-		[DebugFloatField( Digits = 2 )]
-		private float diffAngle;
+		public Vector2 currentDirection;
+		private Vector2 lastDirection;
 
+		private bool isMovingAwayFromCollision = false;
+		private Vector2 directionToMoveAway;
+		private float currentTimeMovingAway;
+		private readonly float timeMovingAway = .7f;
 
-		public override void Update( float dt )
+		private Vector2 nextCheckpointDir => ( NextCheckpoint.Center.ToVector2() - Position ).GetNormalized();
+
+		private float minGroupSeparationDist = 17f;
+
+		public override void ProcessInput( float dt )
 		{
-			throttle = MathUtils.Approach( dt * 1.5f, throttle, 1f );
-			if ( IsStuck )
-				throttle = -1f;
-
-			//  turn axis
-			Vector2 dir = ( nextCheckpoint.Center.ToVector2() - Position );
-			dir.Normalize();
-
-			float dir_angle = Angle.Direction().Angle() - dir.Angle();
-			turnAxis = MathUtils.Approach( dt * 4, turnAxis, dir_angle < 0f ? 1f : -1f );
-
 			//  move
-			Move( dt, throttle, turnAxis, false );
+			currentDirection = nextCheckpointDir;
+			if ( IsStuck )
+			{
+				directionToMoveAway = lastDirection.Rotate180();
+				isMovingAwayFromCollision = true;
+				currentTimeMovingAway = timeMovingAway + (float) Game.Random.NextDouble() * -2f;
+			}
+			if ( isMovingAwayFromCollision )
+			{
+				currentDirection = directionToMoveAway;
 
-			base.Update( dt );
+				currentTimeMovingAway += dt;
+				if ( currentTimeMovingAway >= timeMovingAway )
+					isMovingAwayFromCollision = false;
+			}
+
+			//  slow when reaching a checkpoint to allow a better rotation
+			if ( Game.CurrentTime - LastTimeCheckpointPassed <= 1f )
+				currentDirection = currentDirection - Forward * .2f;// * -Vector2.Dot( Right, dir );
+			
+			//Direction = Vector2.Lerp( Direction, dir, dt * 1.5f ); //  allow to going in reverse gear and to go forward smoothly
+			lastDirection = currentDirection;
+			InputDirection = ( currentDirection + GetGroupSeparationDirection() * .25f ).GetNormalized();
+			//Console.WriteLine( Direction );
+		}
+
+		public Vector2 GetGroupSeparationDirection()
+		{
+			Vector2 dir = new Vector2();
+			int count = 0;
+
+			foreach ( RaceCarEntity car in GameScene.SortedCarsInPosition )
+			{
+				if ( car == this ) continue;
+
+				float dist = Vector2.Distance( Position, car.Position );
+				if ( dist >= minGroupSeparationDist ) continue;
+
+				dir += ( Position - car.Position ).GetNormalized();
+				count++;
+			}
+
+			if ( dir == Vector2.Zero )
+				return Vector2.Zero;
+			return dir / count;
+		}
+
+		public override void DebugDraw( SpriteBatch spriteBatch )
+		{
+			base.DebugDraw( spriteBatch );
+
+			//Vector2 dir = Angle.Direction();
+			//spriteBatch.DrawLine( Position, Position + dir * 5f, Color.White );
+			//spriteBatch.DrawLine( Position, Position + new Vector2( -dir.Y, dir.X ) * targetTurnAxis * 10f, Color.Red );
+			spriteBatch.DrawLine( Position, Position + currentDirection * 15f, Color.Purple );
+
+			//spriteBatch.DrawLine( Position, Position + nextCheckpointDir * 20f, Color.Blue );
 		}
 	}
 }

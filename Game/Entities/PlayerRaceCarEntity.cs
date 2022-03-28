@@ -1,36 +1,57 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using RacingGame.Utils;
+using RacingGame.Scenes;
 using System;
 
 namespace RacingGame.Gameplay
 {
 	public class PlayerRaceCarEntity : RaceCarEntity
 	{
-		public override void Update( float dt )
+		public float LapTime = 0f;
+		public float BestLapTime = 0f;
+
+		public override void ProcessInput( float dt )
 		{
 			KeyboardState keyboard = Keyboard.GetState();
 
-			//  move
-			bool is_braking = false;
-			float throttle = 0f;
+			//  movement
+			#region DirectionInput
 			if ( keyboard.IsKeyDown( Keys.Z ) )
-				throttle += 1f;
+				InputDirection.Y += 1f;
 			if ( keyboard.IsKeyDown( Keys.S ) )
-				throttle -= 1f;
-			if ( keyboard.IsKeyDown( Keys.Space ) )
-				is_braking = true;
-
-			//  turn
-			float turn_axis = 0f;
+				InputDirection.Y -= 1f;
 			if ( keyboard.IsKeyDown( Keys.Q ) )
-				turn_axis -= 1f;
+				InputDirection.X += 1f;
 			if ( keyboard.IsKeyDown( Keys.D ) )
-				turn_axis += 1f;
+				InputDirection.X -= 1f;
 
-			Move( dt, throttle, turn_axis, is_braking );
-			Game.Camera.Offset = Vector2.Lerp( Game.Camera.Offset, new Vector2( MathF.Cos( Angle ), MathF.Sin( Angle ) ) * 35f * currentThrottle, dt * 10f );
-		
+			if ( !( InputDirection == Vector2.Zero ) )
+				InputDirection = Right * InputDirection.X + Forward * InputDirection.Y; //  translate our relative direction to world
+			#endregion
+
+			//  braking
+			IsBraking = keyboard.IsKeyDown( Keys.Space );
+		}
+
+		public override void OnLapDone()
+		{
+			if ( BestLapTime == 0f )
+				BestLapTime = LapTime;
+			else
+				BestLapTime = Math.Min( BestLapTime, LapTime );
+
+			LapTime = 0f;
+		}
+
+		public override void Update( float dt )
+		{
 			base.Update( dt );
+
+			if ( GameScene.Instance.IsStarted )
+				LapTime += dt;
+
+			Game.Camera.Offset = Vector2.Lerp( Game.Camera.Offset, Angle.Direction() * 35f * currentThrottle, dt * 10f );
 		}
 	}
 }

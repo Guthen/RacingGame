@@ -71,7 +71,7 @@ namespace RacingGame.Core
 			UpdateScaleTransform();
 			UpdateTransform();
 
-			Console.WriteLine( "Camera: update screen scale ({0})", scale );
+			Console.WriteLine( "Camera: Update Screen Scale (x{0})", scale );
 		}
 
 		private void UpdateTransform()

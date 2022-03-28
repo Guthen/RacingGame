@@ -42,13 +42,13 @@ namespace RacingGame.Gameplay
 		}
 		public Vector2 WorldToGrid( Vector2 world_pos ) => new Vector2( MathF.Floor( world_pos.X / QuadSize.X ), MathF.Floor( world_pos.Y / QuadSize.Y ) );
 
-		public bool IsColliding( BoundingPolygon polygon )
+		public BoundingPolygon IsColliding( BoundingPolygon polygon )
 		{
 			foreach ( BoundingPolygon collider in Level.Colliders )
 				if ( SAT.Intersect( polygon, collider ) )
-					return true;
+					return collider;
 
-			return false;
+			return null;
 		}
 
 		public void Clear( int wide, int tall )

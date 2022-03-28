@@ -28,6 +28,17 @@ namespace RacingGame.Utils
 			vector.Normalize();
 			return vector;
 		}
+		public static Vector2 Limit( this Vector2 vector, float max_length )
+		{
+			float length = vector.Length();
+			return vector.GetNormalized() * MathF.Min( length, max_length ) / length;
+		}
+
+		public static Vector2 Rotate90( this Vector2 vector, bool is_clockwise = true ) 
+			=> is_clockwise ? new Vector2( vector.Y, -vector.X ) : new Vector2( -vector.Y, vector.X );
+		public static Vector2 Rotate180( this Vector2 vector ) => new Vector2( -vector.X, -vector.Y );
+
+		public static Vector2 ToVector2( this Vector3 vector ) => new Vector2( vector.X, vector.Y );
 
 		/* 
 		 * C# '%' operator is a remainder and not a modulo (so doesn't work with negative number), that's bad but anyways:
