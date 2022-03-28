@@ -83,10 +83,10 @@ namespace RacingGame.Utils
 				UpdateVertex( i );
 		}
 
-		public void UpdateTo( Vector2 pos, float angle )
+		public void UpdateTo( Vector2 pos, float ang )
 		{
-			this.position = pos;
-			this.angle = angle;
+			position = pos;
+			angle = ang;
 			UpdateVertices();
 		}
 
@@ -162,7 +162,6 @@ namespace RacingGame.Utils
 				{
 					if ( common_vertices < 2 )
 					{
-						//Console.WriteLine( "vertices already merged" );
 						result = null;
 						return false;
 					}
@@ -170,8 +169,6 @@ namespace RacingGame.Utils
 						break;
 				}
 
-				//Console.WriteLine( i + " / " + ( a.Vertices.Length + b.Vertices.Length ) + ": " + current_id );
-				//if ( current_id >= current.Vertices.Length ) break;
 				Vector2 vertex = current.Vertices[current_id];
 				if ( vertices.Contains( vertex - a.Position ) ) //  do not add duplicates
 				{
@@ -185,7 +182,6 @@ namespace RacingGame.Utils
 				{
 					if ( other.Vertices[j] == vertex )
 					{
-						//Console.WriteLine( current_id + " & " + j + " are common vertices" );
 						is_common = true;
 
 						//  switch polygons
@@ -215,7 +211,6 @@ namespace RacingGame.Utils
 			//  check common vertices (min: 2)
 			if ( common_vertices < 2 )
 			{
-				//Console.WriteLine( "no common vertices" );
 				result = null;
 				return false;
 			}
@@ -234,7 +229,6 @@ namespace RacingGame.Utils
 			Vector2[] vertices_array = vertices.ToArray();
 			if ( convex && !IsConvex( vertices_array ) )
 			{
-				//Console.WriteLine( "not convex" );
 				result = null;
 				return false;
 			}
@@ -246,7 +240,7 @@ namespace RacingGame.Utils
 
 		/*
 		 * Simple algorithm to know if a polygon is convex or not.
-		 * Basically, it loop over all edges and checks if the direction (left or right) tp the next edge is different from the previous one
+		 * Basically, it loop over all edges and checks if the direction (left or right) to the next edge is different from the previous one
 		 * Source:
 		 * ─ http://www.sunshine2k.de/coding/java/Polygon/Convex/polygon.htm#:~:text=polygon%20is%20convex%2C%20I%20came,polygon%20does%20not%20cross%20itself
 		 */

@@ -1,7 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RacingGame.Utils
 {
@@ -50,6 +48,11 @@ namespace RacingGame.Utils
 		public static float Distance( this Point point, Point target ) => MathF.Sqrt( ( point.X - target.X ) ^ 2 + ( point.Y - target.Y ) ^ 2 );
 		public static float Distance( this Point point, Vector2 target ) => MathF.Sqrt( MathF.Pow( point.X - target.X, 2f ) + MathF.Pow( point.Y - target.Y, 2f ) );
 	
+		/*
+		 * Sources: 
+		 * - https://stackoverflow.com/questions/11907947/how-to-check-if-a-point-lies-on-a-line-between-2-other-points
+		 * - https://stackoverflow.com/questions/17692922/check-is-a-point-x-y-is-between-two-points-drawn-on-a-straight-line
+		*/
 		public static bool IsInLine( this Vector2 c, Vector2 a, Vector2 b )
 		{
 			if ( a.X == b.X ) return a.X == c.X; //  horizontal
@@ -60,7 +63,6 @@ namespace RacingGame.Utils
 			return ix == iy 
 				&& ( ix >= 0 && ix <= 1 ) 
 				&& ( iy >= 0 && iy <= 1 );
-			//return ( a.X - c.X ) * ( a.Y - c.Y ) == ( c.X - b.X ) * ( c.Y - b.Y ); //  any direction;
 		}
 	}
 }

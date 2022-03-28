@@ -51,7 +51,6 @@ namespace RacingGame.Scenes
 				};
 				car.SetSkin( i % car.Skins.Length );
 				SortedCarsInPosition.Add( car );
-				//break;
 			}
 
 			//  player

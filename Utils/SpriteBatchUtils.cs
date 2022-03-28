@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace RacingGame.Utils
 {
-    public static class Paint
+    public static class SpriteBatchUtils
 	{
         private static Texture2D _texture;
         private static Texture2D GetTexture( SpriteBatch spriteBatch )

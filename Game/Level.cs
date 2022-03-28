@@ -26,7 +26,6 @@ namespace RacingGame.Gameplay
 		public int[,] MainLayer { get; protected set; }
 		public int[,] WallLayer { get; protected set; }
 
-		//[JsonConverter( typeof( Vector2ArrayConverter ) )]
 		public Vector2[] SpawnPositions;
 		public Vector2[] SpawnDirections;
 		public Rectangle[] Checkpoints;
@@ -278,8 +277,6 @@ namespace RacingGame.Gameplay
 			}
 		}
 		private void MergeColliders( Dictionary<BoundingPolygon, List<BoundingPolygon>> adjacents )
-		{
-			Colliders = MergeColliders( Colliders, adjacents );
-		}
+			=> Colliders = MergeColliders( Colliders, adjacents );
 	}
 }

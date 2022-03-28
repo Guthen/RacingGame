@@ -1,7 +1,5 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using RacingGame.Core;
 using RacingGame.Utils;
 using RacingGame.Scenes;
 
@@ -40,14 +38,12 @@ namespace RacingGame.Gameplay
 					isMovingAwayFromCollision = false;
 			}
 
-			//  slow when reaching a checkpoint to allow a better rotation
+			//  slowing down after reaching a checkpoint to allow a better rotation to the next checkpoint
 			if ( Game.CurrentTime - LastTimeCheckpointPassed <= 1f )
-				currentDirection = currentDirection - Forward * .2f;// * -Vector2.Dot( Right, dir );
+				currentDirection = currentDirection - Forward * .2f;
 			
-			//Direction = Vector2.Lerp( Direction, dir, dt * 1.5f ); //  allow to going in reverse gear and to go forward smoothly
 			lastDirection = currentDirection;
 			InputDirection = ( currentDirection + GetGroupSeparationDirection() * .25f ).GetNormalized();
-			//Console.WriteLine( Direction );
 		}
 
 		public Vector2 GetGroupSeparationDirection()

@@ -5,7 +5,6 @@ using RacingGame.Core;
 using RacingGame.Scenes;
 using RacingGame.Utils;
 using System;
-using System.Linq;
 
 /*
  * COOL BUT NOT IDEAS TO MAKE RIGHT NOW:
@@ -37,7 +36,7 @@ namespace RacingGame
 
 	public class Game : Microsoft.Xna.Framework.Game, IInputReceiver
 	{
-		private SpriteBatch _spriteBatch;
+		private SpriteBatch spriteBatch;
 
 		public Vector2 RenderSize = new Vector2( 320f, 180f );
 
@@ -80,7 +79,7 @@ namespace RacingGame
 		protected override void LoadContent()
 		{
 			Console.WriteLine( "Game: Loading Content" );
-			_spriteBatch = new SpriteBatch( GraphicsDevice );
+			spriteBatch = new SpriteBatch( GraphicsDevice );
 
 			Font = Content.Load<SpriteFont>( "Fonts/default" );
 			BigFont = Content.Load<SpriteFont>( "Fonts/big" );
@@ -117,24 +116,20 @@ namespace RacingGame
 			GraphicsDevice.Clear( Color.Black );
 
 			//  game entities
-			_spriteBatch.Begin( blendState: BlendState.NonPremultiplied, transformMatrix: Camera.Transform, samplerState: SamplerState.PointWrap );
-			EntityManager.Draw( _spriteBatch );
-			_spriteBatch.End();
+			spriteBatch.Begin( blendState: BlendState.NonPremultiplied, transformMatrix: Camera.Transform, samplerState: SamplerState.PointWrap );
+			EntityManager.Draw( spriteBatch );
+			spriteBatch.End();
 
 			//  hud
-			_spriteBatch.Begin( /*transformMatrix: Camera.ViewportMatrix*/ );
-			if ( !( Game.DebugLevel == DebugLevel.None ) )
+			spriteBatch.Begin( /*transformMatrix: Camera.ViewportMatrix*/ );
+			if ( !( DebugLevel == DebugLevel.None ) )
 			{
-				_spriteBatch.DrawString( Font, string.Format( "{0} ents ({1} U; {2} D; {3} HUD)", EntityManager.Entities.Count, EntityManager.UpdateEntities.Count, EntityManager.DrawableEntities.Count, EntityManager.DrawableHUDs.Count ), Vector2.One * 6, Color.White );
-				_spriteBatch.DrawString( Font, InputManager.InputReceivers.Count + " input receivers", new Vector2( 6, Font.MeasureString( "a" ).Y + 6 ), Color.White );
-				_spriteBatch.DrawString( Font, "Debug: " + Enum.GetName( typeof( DebugLevel ), DebugLevel ), new Vector2( 6, Font.MeasureString( "a" ).Y * 2 + 6 ), Color.White );
+				spriteBatch.DrawString( Font, string.Format( "{0} ents ({1} U; {2} D; {3} HUD)", EntityManager.Entities.Count, EntityManager.UpdateEntities.Count, EntityManager.DrawableEntities.Count, EntityManager.DrawableHUDs.Count ), Vector2.One * 6, Color.White );
+				spriteBatch.DrawString( Font, InputManager.InputReceivers.Count + " input receivers", new Vector2( 6, Font.MeasureString( "a" ).Y + 6 ), Color.White );
+				spriteBatch.DrawString( Font, "Debug: " + Enum.GetName( typeof( DebugLevel ), DebugLevel ), new Vector2( 6, Font.MeasureString( "a" ).Y * 2 + 6 ), Color.White );
 			}
-			EntityManager.DrawHUD( _spriteBatch );
-			/*
-			_spriteBatch.DrawLine( Vector2.Zero, new Vector2( Window.ClientBounds.Width, Window.ClientBounds.Height ), Color.White );
-			_spriteBatch.DrawLine( new Vector2( 0f, Window.ClientBounds.Height ), new Vector2( Window.ClientBounds.Width, 0f ), Color.White );
-			*/
-			_spriteBatch.End();
+			EntityManager.DrawHUD( spriteBatch );
+			spriteBatch.End();
 
 			base.Draw( gameTime );
 		}
@@ -143,6 +138,7 @@ namespace RacingGame
 		{
 			switch ( key )
 			{
+				//  debug mode
 				case Keys.OemComma:
 					Array values = Enum.GetValues( typeof( DebugLevel ) );
 
@@ -156,6 +152,7 @@ namespace RacingGame
 						}	
 					}
 					break;
+				//  slow-mo time 
 				case Keys.CapsLock:
 					TimeFactor = TimeFactor == 1f ? .1f : 1f;
 					break;
